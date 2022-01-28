@@ -43,12 +43,6 @@ def reduce_mem_usage(df):
 
     return df
 
-data_train = pd.read_csv('data/data_train.csv')
-features = dd.read_csv('data/features.csv', blocksize=25e6, sep='\t')
-features_train = features.loc[features['id'].isin(data_train['id'])].compute()
-
-data_test = pd.read_csv('data/data_test.csv')
-features_test = features.loc[features['id'].isin(data_test['id'])].compute()
 
 class DataPreprocessing:
 
@@ -71,18 +65,6 @@ class DataPreprocessing:
         data_merged_train.drop(['Unnamed: 0_x', 'Unnamed: 0_y', 'buy_time_y'], axis=1, inplace=True)
 
         return data_merged_train
-
-datapreprocessing = DataPreprocessing()
-df_all = datapreprocessing.transform(data_train, features_train)
-df_all = reduce_mem_usage(df_all)
-df_all_test = datapreprocessing.transform(data_test, features_train)
-df_all_test = reduce_mem_usage(df_all_test)
-df_all.to_csv('data/df_all.csv', index=False)
-df_all_test.to_csv('data/df_all_test.csv', index=False)
-data_train = None
-data_test = None
-features = None
-features_train = None
 
 class Featuregenerator():
 
@@ -219,12 +201,6 @@ class Featuregenerator():
         X = X.fillna(0)
 
         return X
-
-featuregenerator = Featuregenerator()
-train_df = featuregenerator.fit(df_all, 316, 337)
-test_df = featuregenerator.transform(df_all_test)
-train_df.to_csv('data/train_df.csv', index=False)
-test_df.to_csv('data/test_df.csv', index=False)
 
 
 class Estimator():
@@ -515,12 +491,38 @@ class Estimator():
             df = df.append(sample, ignore_index=True)
         return df.sample(frac=1)
 
-estimator = Estimator()
-estimator.fit(train_df)
-predicted = estimator.predict(test_df)
-print(predicted.head())
+if __name__ == "__main__":
+    data_train = pd.read_csv('data/data_train.csv')
+    features = dd.read_csv('data/features.csv', blocksize=25e6, sep='\t')
+    features_train = features.loc[features['id'].isin(data_train['id'])].compute()
 
-predicted.to_csv('data/answers_test.csv', index=False)
+    data_test = pd.read_csv('data/data_test.csv')
+    features_test = features.loc[features['id'].isin(data_test['id'])].compute()
+
+    datapreprocessing = DataPreprocessing()
+    df_all = datapreprocessing.transform(data_train, features_train)
+    df_all = reduce_mem_usage(df_all)
+    df_all_test = datapreprocessing.transform(data_test, features_train)
+    df_all_test = reduce_mem_usage(df_all_test)
+    df_all.to_csv('data/df_all.csv', index=False)
+    df_all_test.to_csv('data/df_all_test.csv', index=False)
+    data_train = None
+    data_test = None
+    features = None
+    features_train = None
+
+    featuregenerator = Featuregenerator()
+    train_df = featuregenerator.fit(df_all, 316, 337)
+    test_df = featuregenerator.transform(df_all_test)
+    train_df.to_csv('data/train_df.csv', index=False)
+    test_df.to_csv('data/test_df.csv', index=False)
+
+    estimator = Estimator()
+    estimator.fit(train_df)
+    predicted = estimator.predict(test_df)
+    print(predicted.head())
+
+    predicted.to_csv('data/answers_test.csv', index=False)
 
 
 
