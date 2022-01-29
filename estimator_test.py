@@ -496,7 +496,7 @@ if __name__ == "__main__":
     features = dd.read_csv('data/features.csv', blocksize=25e6, sep='\t')
     features_train = features.loc[features['id'].isin(data_train['id'])].compute()
 
-    data_test = pd.read_csv('data/data_test.csv')
+    data_test = pd.read_csv('data_test.csv')
     features_test = features.loc[features['id'].isin(data_test['id'])].compute()
 
     datapreprocessing = DataPreprocessing()
@@ -522,7 +522,7 @@ if __name__ == "__main__":
     predicted = estimator.predict(test_df)
     print(predicted.head())
 
-    predicted.to_csv('data/answers_test.csv', index=False)
+    predicted.to_csv('answers_test.csv', index=False)
 
 
 
